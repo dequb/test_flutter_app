@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'package:barcode_scan/barcode_scan.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
@@ -57,21 +59,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // On urlChanged stream
   StreamSubscription<WebViewStateChanged> _onStateChanged;
-
   StreamSubscription<WebViewHttpError> _onHttpError;
-
   StreamSubscription<double> _onScrollYChanged;
-
   StreamSubscription<double> _onScrollXChanged;
-
   final _urlCtrl = new TextEditingController(text: selectedUrl);
-
-  final _codeCtrl =
-  new TextEditingController(text: 'window.navigator.userAgent');
-
+  final _codeCtrl =  new TextEditingController(text: 'window.navigator.userAgent');
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
-
   final _history = [];
+
+  String barcode = "";
 
   @override
   void initState() {
@@ -169,6 +165,59 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           new RaisedButton(
             onPressed: () {
+              Navigator.of(context).pushNamed('/widget');
+            },
+            child: const Text('Open widget webview'),
+          ),
+          new RaisedButton(
+            onPressed: () {
+              barcodeScanning();
+            },
+            child: const Text('Capture image'),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future barcodeScanning() async {
+
+    try {
+      String barcode = await BarcodeScanner.scan();
+      setState(() => this.barcode = barcode);
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.CameraAccessDenied) {
+        setState(() {
+          this.barcode = 'No camera permission!';
+        });
+      } else {
+        setState(() => this.barcode = 'Unknown error: $e');
+      }
+    } on FormatException {
+      setState(() => this.barcode =
+      'Nothing captured.');
+    } catch (e) {
+      setState(() => this.barcode = 'Unknown error: $e');
+    }
+  }
+
+  /* Old function
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      key: _scaffoldKey,
+      appBar: new AppBar(
+        title: const Text('Plugin example app'),
+      ),
+      body: new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          new Container(
+            padding: const EdgeInsets.all(24.0),
+            child: new TextField(controller: _urlCtrl),
+          ),
+          new RaisedButton(
+            onPressed: () {
               flutterWebviewPlugin.launch(selectedUrl,
                   rect: new Rect.fromLTWH(
                       0.0, 0.0, MediaQuery.of(context).size.width, 300.0),
@@ -233,5 +282,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-  }
+  }*/
 }
