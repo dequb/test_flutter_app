@@ -174,7 +174,12 @@ class _MyHomePageState extends State<MyHomePage> {
               barcodeScanning();
             },
             child: const Text('Capture image'),
-          )
+          ),
+          new Padding(
+            padding: const EdgeInsets.all(8.0),
+          ),
+          new Text("Barcode Number after Scan : " + barcode)
+          // displayImage(),
         ],
       ),
     );
