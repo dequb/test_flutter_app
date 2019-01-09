@@ -1,9 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:test_flutter_app/app_translations_delegate.dart';
+import 'package:test_flutter_app/language_selector_icon_button.dart';
+import 'package:test_flutter_app/application.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 const kAndroidUserAgent =
@@ -18,11 +20,20 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print(application.supportedLocales());
     return new MaterialApp(
       title: 'Flutter WebView Demo',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
+      localizationsDelegates: [
+        const AppTranslationsDelegate(),
+        //provides localised strings
+        GlobalMaterialLocalizations.delegate,
+        //provides RTL support
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: application.supportedLocales(),
       routes: {
         '/': (_) => const MyHomePage(title: 'Flutter WebView Demo'),
         '/widget': (_) => new WebviewScaffold(
@@ -68,10 +79,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final _history = [];
 
   String barcode = "";
+  AppTranslationsDelegate _newLocaleDelegate;
 
   @override
   void initState() {
     super.initState();
+
+    _newLocaleDelegate = AppTranslationsDelegate(newLocale: null);
+    application.onLocaleChanged = onLocaleChange;
 
     flutterWebviewPlugin.close();
 
@@ -134,6 +149,12 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void onLocaleChange(Locale locale) {
+    setState(() {
+      _newLocaleDelegate = AppTranslationsDelegate(newLocale: locale);
+    });
+  }
+
   @override
   void dispose() {
     // Every listener should be canceled, the same should be done with this stream.
@@ -155,6 +176,9 @@ class _MyHomePageState extends State<MyHomePage> {
       key: _scaffoldKey,
       appBar: new AppBar(
         title: const Text('Plugin example app'),
+        actions: <Widget>[
+          LanguageSelectorIconButton(),
+        ],
       ),
       body: new Column(
         mainAxisAlignment: MainAxisAlignment.center,
