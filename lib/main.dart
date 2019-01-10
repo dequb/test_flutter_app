@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate
       ],
       localeResolutionCallback: (Locale locale, Iterable<Locale> supportedLocales) {
-        if (locale == null) return Locale('und', 'US');
+        if (locale == null) return Locale('und', 'US'); # FIXME??
         for (Locale supportedLocale in supportedLocales) {
           if (supportedLocale.languageCode == locale.languageCode || supportedLocale.countryCode == locale.countryCode) {
             return supportedLocale;
