@@ -29,6 +29,11 @@ class AppTranslations {
   get currentLanguage => locale.languageCode;
 
   String text(String key) {
-    return _localisedValues[key] ?? "$key not found";
+    if (_localisedValues == null) {
+      return 'Not ready yet';
+    }
+    else {
+      return _localisedValues[key] ?? "$key missing";
+    }
   }
 }

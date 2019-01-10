@@ -21,6 +21,7 @@ class _LanguageSelectorPageState extends State<LanguageSelectorPage> {
 
   @override
   Widget build(BuildContext context) {
+    print(AppTranslations.of(context).text("title_select_language"));
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -43,7 +44,6 @@ class _LanguageSelectorPageState extends State<LanguageSelectorPage> {
   _buildLanguageItem(String language) {
     return InkWell(
       onTap: () {
-        print(language);
         application.onLocaleChanged(Locale(languagesMap[language]));
       },
       child: Center(

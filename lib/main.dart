@@ -1,11 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:test_flutter_app/app_translations_delegate.dart';
-import 'package:test_flutter_app/language_selector_icon_button.dart';
-import 'package:test_flutter_app/application.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 const kAndroidUserAgent =
@@ -13,6 +12,60 @@ const kAndroidUserAgent =
 
 String selectedUrl = 'https://it.chris.eurac.edu';
 
+// Localization support start
+
+class AppLocalizations {
+  AppLocalizations(this.locale);
+
+  final Locale locale;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  Map<String, String> _sentences;
+
+  Future<bool> load() async {
+    String data = await rootBundle.loadString('assets/locale/localization_${this.locale.languageCode}.json');
+    Map<String, dynamic> _result = json.decode(data);
+
+    this._sentences = new Map();
+    _result.forEach((String key, dynamic value) {
+      this._sentences[key] = value.toString();
+    });
+
+    return true;
+  }
+
+  String trans(String key) {
+    return this._sentences[key];
+  }
+}
+
+class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const AppLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => ['de', 'it', 'en'].contains(locale.languageCode);
+
+  @override
+  Future<AppLocalizations> load(Locale locale) async {
+    AppLocalizations localizations = new AppLocalizations(locale);
+    await localizations.load();
+
+    print("Load ${locale.languageCode}");
+
+    return localizations;
+  }
+
+  @override
+  bool shouldReload(AppLocalizationsDelegate old) => false;
+}
+
+// Localization support end
+
+
+// Main
 void main() {
   runApp(new MyApp());
 }
@@ -20,20 +73,29 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print(application.supportedLocales());
     return new MaterialApp(
       title: 'Flutter WebView Demo',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      localizationsDelegates: [
-        const AppTranslationsDelegate(),
-        //provides localised strings
-        GlobalMaterialLocalizations.delegate,
-        //provides RTL support
-        GlobalWidgetsLocalizations.delegate,
+      supportedLocales: [
+        const Locale('de', 'DE'),
+        const Locale('it', 'IT'),
+        const Locale('en', 'US')
       ],
-      supportedLocales: application.supportedLocales(),
+      localizationsDelegates: [
+        const AppLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate
+      ],
+      localeResolutionCallback: (Locale locale, Iterable<Locale> supportedLocales) {
+        for (Locale supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale.languageCode || supportedLocale.countryCode == locale.countryCode) {
+            return supportedLocale;
+          }
+        }
+        return supportedLocales.first;
+      },
       routes: {
         '/': (_) => const MyHomePage(title: 'Flutter WebView Demo'),
         '/widget': (_) => new WebviewScaffold(
@@ -60,7 +122,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // Instance of WebView plugin
-  final flutterWebviewPlugin = new FlutterWebviewPlugin();
+  /*final flutterWebviewPlugin = new FlutterWebviewPlugin();
 
   // On destroy stream
   StreamSubscription _onDestroy;
@@ -72,30 +134,26 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<WebViewStateChanged> _onStateChanged;
   StreamSubscription<WebViewHttpError> _onHttpError;
   StreamSubscription<double> _onScrollYChanged;
-  StreamSubscription<double> _onScrollXChanged;
+  StreamSubscription<double> _onScrollXChanged;*/
   final _urlCtrl = new TextEditingController(text: selectedUrl);
-  final _codeCtrl =  new TextEditingController(text: 'window.navigator.userAgent');
+  //final _codeCtrl =  new TextEditingController(text: 'window.navigator.userAgent');
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final _history = [];
+  //final _history = [];
 
   String barcode = "";
-  AppTranslationsDelegate _newLocaleDelegate;
 
   @override
   void initState() {
     super.initState();
 
-    _newLocaleDelegate = AppTranslationsDelegate(newLocale: null);
-    application.onLocaleChanged = onLocaleChange;
-
-    flutterWebviewPlugin.close();
+    //flutterWebviewPlugin.close();
 
     _urlCtrl.addListener(() {
       selectedUrl = _urlCtrl.text;
     });
 
     // Add a listener to on destroy WebView, so you can make came actions.
-    _onDestroy = flutterWebviewPlugin.onDestroy.listen((_) {
+    /*_onDestroy = flutterWebviewPlugin.onDestroy.listen((_) {
       if (mounted) {
         // Actions like show a info toast.
         _scaffoldKey.currentState.showSnackBar(
@@ -146,26 +204,20 @@ class _MyHomePageState extends State<MyHomePage> {
               _history.add('onHttpError: ${error.code} ${error.url}');
             });
           }
-        });
-  }
-
-  void onLocaleChange(Locale locale) {
-    setState(() {
-      _newLocaleDelegate = AppTranslationsDelegate(newLocale: locale);
-    });
+        });*/
   }
 
   @override
   void dispose() {
     // Every listener should be canceled, the same should be done with this stream.
-    _onDestroy.cancel();
+    /*_onDestroy.cancel();
     _onUrlChanged.cancel();
     _onStateChanged.cancel();
     _onHttpError.cancel();
     _onScrollXChanged.cancel();
     _onScrollYChanged.cancel();
 
-    flutterWebviewPlugin.dispose();
+    flutterWebviewPlugin.dispose();*/
 
     super.dispose();
   }
@@ -176,9 +228,6 @@ class _MyHomePageState extends State<MyHomePage> {
       key: _scaffoldKey,
       appBar: new AppBar(
         title: const Text('Plugin example app'),
-        actions: <Widget>[
-          LanguageSelectorIconButton(),
-        ],
       ),
       body: new Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -197,7 +246,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               barcodeScanning();
             },
-            child: const Text('Capture image'),
+            child: Text(AppLocalizations.of(context).trans('take_photo'))
           ),
           new Padding(
             padding: const EdgeInsets.all(8.0),
@@ -230,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  /* Old function
+/* Old function
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
