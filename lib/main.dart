@@ -10,7 +10,7 @@ import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 const kAndroidUserAgent =
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Mobile Safari/537.36';
 
-String selectedUrl = 'https://it.chris.eurac.edu';
+String selectedUrl = 'https://www.gm.eurac.edu/limesurvey3/index.php/538477';
 
 // Localization support start
 
@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate
       ],
       localeResolutionCallback: (Locale locale, Iterable<Locale> supportedLocales) {
-        if (locale == null) return Locale('und', 'US'); # FIXME??
+        if (locale == null) return Locale('und', 'US'); // FIXME??
         for (Locale supportedLocale in supportedLocales) {
           if (supportedLocale.languageCode == locale.languageCode || supportedLocale.countryCode == locale.countryCode) {
             return supportedLocale;
@@ -228,20 +228,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return new Scaffold(
       key: _scaffoldKey,
       appBar: new AppBar(
-        title: const Text('Plugin example app'),
+        title: const Text('Example app'),
       ),
       body: new Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           new Container(
             padding: const EdgeInsets.all(24.0),
-            child: new TextField(controller: _urlCtrl),
+            //child: new TextField(controller: _urlCtrl),
           ),
           new RaisedButton(
             onPressed: () {
               Navigator.of(context).pushNamed('/widget');
             },
-            child: const Text('Open widget webview'),
+            child: const Text('Open questionnaire'),
           ),
           new RaisedButton(
             onPressed: () {
